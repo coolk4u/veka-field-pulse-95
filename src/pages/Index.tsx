@@ -91,17 +91,17 @@ const Index = () => {
               <AvatarImage src="/placeholder.svg" />
               <AvatarFallback className="bg-blue-500 text-white">SK</AvatarFallback>
             </Avatar>
-            <img 
-              src="/lovable-uploads/97d23ffb-bdd1-4fb2-b42e-3ff013395744.png" 
-              alt="VEKA Logo" 
-              className="h-8 w-auto"
-            />
+            
             <div>
               <h1 className="text-2xl font-bold">Sai Kiran</h1>
               <p className="text-blue-100 text-sm">Field Sales Executive</p>
             </div>
           </div>
-          
+          <img 
+              src="/lovable-uploads/97d23ffb-bdd1-4fb2-b42e-3ff013395744.png" 
+              alt="VEKA Logo" 
+              className="h-8 w-auto"
+            />
           <div className="flex items-center gap-4">
             <Button variant="ghost" size="sm" className="text-white hover:bg-white/20 p-2 rounded-xl">
               <Bell className="h-5 w-5" />
