@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -92,6 +91,11 @@ const Index = () => {
               <AvatarImage src="/placeholder.svg" />
               <AvatarFallback className="bg-blue-500 text-white">SK</AvatarFallback>
             </Avatar>
+            <img 
+              src="/lovable-uploads/97d23ffb-bdd1-4fb2-b42e-3ff013395744.png" 
+              alt="VEKA Logo" 
+              className="h-8 w-auto"
+            />
             <div>
               <h1 className="text-2xl font-bold">Sai Kiran</h1>
               <p className="text-blue-100 text-sm">Field Sales Executive</p>
@@ -99,12 +103,6 @@ const Index = () => {
           </div>
           
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center">
-              <Package className="h-6 w-6 text-white" />
-            </div>
-            <div className="text-center">
-              <p className="text-sm font-semibold">VEKA Ltd</p>
-            </div>
             <Button variant="ghost" size="sm" className="text-white hover:bg-white/20 p-2 rounded-xl">
               <Bell className="h-5 w-5" />
             </Button>
