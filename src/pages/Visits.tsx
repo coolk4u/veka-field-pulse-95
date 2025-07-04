@@ -1,73 +1,69 @@
-
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import axios from "axios";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Calendar, MapPin, Clock, Users, CheckCircle, ArrowLeft, Bell, TrendingUp } from "lucide-react";
+import { MapPin, Clock, CheckCircle, ArrowLeft, Bell, User, Calendar, TrendingUp } from "lucide-react";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+
 import { useNavigate } from "react-router-dom";
+
+interface Visit {
+  Id: string;
+  Name__c: string;
+  Email__c: string;
+  Phone__c: string;
+  Address__c: string;
+  Status__c: string;
+  Location__c: string;
+  Date__c: string;
+  Time__c: string;
+}
 
 const Visits = () => {
   const navigate = useNavigate();
+  const [visits, setVisits] = useState<Visit[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
 
   const stats = {
-    totalVisits: 24,
-    completedVisits: 18,
-    pendingVisits: 6,
+    totalVisits: visits.length,
+    completedVisits: visits.filter(v => v.Status__c === "Completed").length,
+    pendingVisits: visits.filter(v => v.Status__c === "Pending").length,
     monthlyTarget: 30
   };
 
-  const recentVisits = [
-    {
-      id: 1,
-      clientName: "Ramesh Construction",
-      address: "Banjara Hills, Hyderabad",
-      type: "Site Inspection",
-      status: "Completed",
-      date: "2025-01-02",
-      time: "10:30 AM"
-    },
-    {
-      id: 2,
-      clientName: "Lakshmi Builders",
-      address: "Jubilee Hills, Hyderabad",
-      type: "Quote Discussion",
-      status: "Pending",
-      date: "2025-01-02",
-      time: "2:00 PM"
-    },
-    {
-      id: 3,
-      clientName: "Srinivas Enterprises",
-      address: "Gachibowli, Hyderabad",
-      type: "Service Call",
-      status: "Completed",
-      date: "2025-01-01",
-      time: "11:15 AM"
-    },
-    {
-      id: 4,
-      clientName: "Vijay Constructions",
-      address: "Kondapur, Hyderabad",
-      type: "Product Demo",
-      status: "Completed",
-      date: "2024-12-31",
-      time: "3:30 PM"
-    },
-    {
-      id: 5,
-      clientName: "Priya Developers",
-      address: "Madhapur, Hyderabad",
-      type: "Site Inspection",
-      status: "Pending",
-      date: "2025-01-03",
-      time: "9:00 AM"
-    }
-  ];
+  useEffect(() => {
+    const fetchVisits = async () => {
+      try {
+        const response = await axios.get(
+        "https://gtmdataai-dev-ed.develop.my.salesforce.com/services/data/v62.0/query?q=SELECT+Id,+Name__c,+Email__c,+Phone__c,+Address__c,+Status__c,+Location__c,+Date__c,+Time__c+FROM+Visit__c+WHERE+Status__c+IN+('Pending','In+Progress')",
+          {
+            headers: {
+              Authorization: `Bearer 00DHn000001PlBH!ARcAQJ9POhieEP.NLUTdbZA9YEx4qiHKPUwzoAPVUBOaBLkDmiOpRQ.Ckcsyy2hJ.2WqEQZxzpgf9EnEmfKkA4dPHGMVUOwE`,
+              Accept: '*/*',
+              'Content-Type': 'application/json',
+            },
+          }
+        );
 
-  const handleVisitDetail = (visitId: number) => {
-    navigate(`/visit/${visitId}`);
-  };
+        setVisits(response.data.records);
+      } catch (error: unknown) {
+        if (axios.isAxiosError(error)) {
+          console.error("Error fetching visits:", error.response?.data || error.message);
+        } else {
+          console.error("Error fetching visits:", (error as Error).message);
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchVisits();
+  }, []);
+
+const handleVisitDetail = (visit: Visit) => {
+  navigate(`/visit/${visit.Id}`, { state: { visit } });
+};
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-600 to-blue-800 pb-20">
@@ -75,12 +71,9 @@ const Visits = () => {
       <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-6 rounded-b-3xl">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-4">
-            <Button 
-              variant="ghost" 
-              size="sm"
+            <Button variant="ghost" size="sm"
               onClick={() => navigate("/")}
-              className="text-white hover:bg-white/20 p-2 rounded-xl"
-            >
+              className="text-white hover:bg-white/20 p-2 rounded-xl">
               <ArrowLeft className="h-5 w-5" />
             </Button>
             <div>
@@ -99,7 +92,7 @@ const Visits = () => {
           </div>
         </div>
 
-        {/* Quick Stats Cards */}
+        {/* Stats */}
         <div className="grid grid-cols-2 gap-4 mb-4">
           <div className="bg-white/20 backdrop-blur-sm rounded-2xl p-4">
             <div className="flex items-center justify-between">
@@ -108,11 +101,11 @@ const Visits = () => {
                 <p className="text-2xl font-bold text-white">{stats.totalVisits}</p>
               </div>
               <div className="bg-white/20 p-2 rounded-xl">
-                <Users className="h-6 w-6 text-white" />
+                <User className="h-6 w-6 text-white" />
               </div>
             </div>
           </div>
-          
+
           <div className="bg-white/20 backdrop-blur-sm rounded-2xl p-4">
             <div className="flex items-center justify-between">
               <div>
@@ -143,52 +136,58 @@ const Visits = () => {
       <div className="p-6 -mt-6">
         <Card className="rounded-3xl border-0 shadow-xl bg-white">
           <CardHeader className="pb-4">
-            <CardTitle className="text-xl">Recent Visits - Hyderabad</CardTitle>
+            <CardTitle className="text-xl">Recent Visits</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            {recentVisits.map((visit) => (
-              <Card 
-                key={visit.id} 
-                className="hover:shadow-md transition-all cursor-pointer border border-gray-100 rounded-2xl overflow-hidden"
-                onClick={() => handleVisitDetail(visit.id)}
-              >
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2">
-                        <h3 className="font-semibold text-lg text-gray-900">{visit.clientName}</h3>
-                        <Badge 
-                          variant={visit.status === "Completed" ? "default" : "secondary"}
-                          className={visit.status === "Completed" ? "bg-green-100 text-green-800" : "bg-orange-100 text-orange-800"}
-                        >
-                          {visit.status}
-                        </Badge>
-                      </div>
-                      <div className="space-y-1 text-gray-600">
-                        <div className="flex items-center gap-2">
-                          <MapPin className="h-4 w-4 text-blue-600" />
-                          <span className="text-sm">{visit.address}</span>
+            {loading ? (
+              <p>Loading visits...</p>
+            ) : visits.length === 0 ? (
+              <p>No visits found</p>
+            ) : (
+              visits.map((visit) => (
+                <Card
+                  key={visit.Id}
+                  className="hover:shadow-md transition-all cursor-pointer border border-gray-100 rounded-2xl overflow-hidden"
+                  onClick={() => handleVisitDetail(visit)}
+                >
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-3 mb-2">
+                          <h3 className="font-semibold text-lg text-gray-900">{visit.Location__c}</h3>
+                          <Badge
+                            variant={visit.Status__c === "Completed" ? "default" : "secondary"}
+                            className={visit.Status__c === "Completed" ? "bg-green-100 text-green-800" : "bg-orange-100 text-orange-800"}
+                          >
+                            {visit.Status__c}
+                          </Badge>
                         </div>
-                        <div className="flex items-center gap-4">
-                          <div className="flex items-center gap-1">
-                            <Calendar className="h-4 w-4 text-blue-600" />
-                            <span className="text-sm">{visit.date}</span>
+                        <div className="space-y-1 text-gray-600">
+                          <div className="flex items-center gap-2">
+                            <MapPin className="h-4 w-4 text-blue-600" />
+                            <span className="text-sm">{visit.Address__c}</span>
                           </div>
-                          <div className="flex items-center gap-1">
-                            <Clock className="h-4 w-4 text-blue-600" />
-                            <span className="text-sm">{visit.time}</span>
+                          <div className="flex items-center gap-4">
+                            <div className="flex items-center gap-1">
+                              <Calendar className="h-4 w-4 text-blue-600" />
+                              <span className="text-sm">{visit.Date__c}</span> {/* Replace with actual date if available */}
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <Clock className="h-4 w-4 text-blue-600" />
+                              <span className="text-sm">{visit.Time__c}</span>
+                            </div>
                           </div>
                         </div>
+                        <p className="text-sm text-blue-600 mt-2 font-medium">{visit.Name__c}</p>
                       </div>
-                      <p className="text-sm text-blue-600 mt-2 font-medium">{visit.type}</p>
+                      <Button variant="ghost" size="sm" className="text-blue-600 hover:bg-blue-50">
+                        View →
+                      </Button>
                     </div>
-                    <Button variant="ghost" size="sm" className="text-blue-600 hover:bg-blue-50">
-                      View →
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+                  </CardContent>
+                </Card>
+              ))
+            )}
           </CardContent>
         </Card>
       </div>
