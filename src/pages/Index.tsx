@@ -88,22 +88,26 @@ const Index = () => {
       <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-6 rounded-b-3xl">
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-3">
+            <Avatar className="h-10 w-10 border-2 border-white">
+              <AvatarImage src="/placeholder.svg" />
+              <AvatarFallback className="bg-blue-500 text-white">SK</AvatarFallback>
+            </Avatar>
+            <div>
+              <h1 className="text-2xl font-bold">Sai Kiran</h1>
+              <p className="text-blue-100 text-sm">Field Sales Executive</p>
+            </div>
+          </div>
+          
+          <div className="flex items-center gap-4">
             <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center">
               <Package className="h-6 w-6 text-white" />
             </div>
-            <div>
-              <h1 className="text-2xl font-bold">VEKA Ltd</h1>
-              <p className="text-blue-100 text-sm">Field Sales Portal</p>
+            <div className="text-center">
+              <p className="text-sm font-semibold">VEKA Ltd</p>
             </div>
-          </div>
-          <div className="flex items-center gap-3">
             <Button variant="ghost" size="sm" className="text-white hover:bg-white/20 p-2 rounded-xl">
               <Bell className="h-5 w-5" />
             </Button>
-            <Avatar className="h-10 w-10 border-2 border-white">
-              <AvatarImage src="/placeholder.svg" />
-              <AvatarFallback className="bg-blue-500 text-white">VK</AvatarFallback>
-            </Avatar>
           </div>
         </div>
 
