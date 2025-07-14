@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { MapPin, Clock, CheckCircle, ArrowLeft, Bell, User, Calendar, TrendingUp } from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-
 import { useNavigate } from "react-router-dom";
 
 interface Visit {
@@ -24,6 +23,7 @@ const Visits = () => {
   const navigate = useNavigate();
   const [visits, setVisits] = useState<Visit[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
+  const [accessToken, setAccessToken] = useState<string | null>(null);
 
   const stats = {
     totalVisits: visits.length,
@@ -32,38 +32,61 @@ const Visits = () => {
     monthlyTarget: 30
   };
 
-  useEffect(() => {
-    const fetchVisits = async () => {
-      try {
-        const response = await axios.get(
+  // Step 1: Get Access Token
+  const getAccessToken = async () => {
+    const tokenUrl = 'https://gtmdataai-dev-ed.develop.my.salesforce.com/services/oauth2/token';
+    const clientId = '3MVG9OGq41FnYVsFObrvP_I4DU.xo6cQ3wP75Sf7rxOPMtz0Ofj5RIDyM83GlmVkGFbs_0aLp3hlj51c8GQsq';
+    const clientSecret = 'A9699851D548F0C076BB6EB07C35FEE1822752CF5B2CC7F0C002DC4ED9466492';
+
+    const params = new URLSearchParams();
+    params.append('grant_type', 'client_credentials');
+    params.append('client_id', clientId);
+    params.append('client_secret', clientSecret);
+
+    try {
+      const response = await axios.post(tokenUrl, params, {
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+      });
+      setAccessToken(response.data.access_token);
+    } catch (err) {
+      console.error("❌ Failed to fetch access token", err);
+    }
+  };
+
+  // Step 2: Fetch Visits using the token
+  const fetchVisits = async (token: string) => {
+    try {
+      const response = await axios.get(
         "https://gtmdataai-dev-ed.develop.my.salesforce.com/services/data/v62.0/query?q=SELECT+Id,+Name__c,+Email__c,+Phone__c,+Address__c,+Status__c,+Location__c,+Date__c,+Time__c+FROM+Visit__c+WHERE+Status__c+IN+('Pending','In+Progress')",
-          {
-            headers: {
-              Authorization: `Bearer 00DHn000001PlBH!ARcAQJ9POhieEP.NLUTdbZA9YEx4qiHKPUwzoAPVUBOaBLkDmiOpRQ.Ckcsyy2hJ.2WqEQZxzpgf9EnEmfKkA4dPHGMVUOwE`,
-              Accept: '*/*',
-              'Content-Type': 'application/json',
-            },
-          }
-        );
-
-        setVisits(response.data.records);
-      } catch (error: unknown) {
-        if (axios.isAxiosError(error)) {
-          console.error("Error fetching visits:", error.response?.data || error.message);
-        } else {
-          console.error("Error fetching visits:", (error as Error).message);
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: '*/*',
+            'Content-Type': 'application/json',
+          },
         }
-      } finally {
-        setLoading(false);
-      }
-    };
+      );
+      setVisits(response.data.records);
+    } catch (error) {
+      console.error("❌ Error fetching visits:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    fetchVisits();
+  useEffect(() => {
+    getAccessToken();
   }, []);
 
-const handleVisitDetail = (visit: Visit) => {
-  navigate(`/visit/${visit.Id}`, { state: { visit } });
-};
+  useEffect(() => {
+    if (accessToken) {
+      fetchVisits(accessToken);
+    }
+  }, [accessToken]);
+
+  const handleVisitDetail = (visit: Visit) => {
+    navigate(`/visit/${visit.Id}`, { state: { visit } });
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-600 to-blue-800 pb-20">
