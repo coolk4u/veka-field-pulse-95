@@ -21,6 +21,8 @@ const Index = () => {
       navigate("/visits");
     } else if (option === "attendance") {
       navigate("/attendance");
+    }else if (option === "leads") {
+      navigate("/leads");
     } else if (option === "conveyance") {
       navigate("/conveyance");
     }
@@ -174,25 +176,29 @@ const Index = () => {
           </CardContent>
         </Card>
 
-        <Card 
-          className="hover:shadow-lg transition-all cursor-pointer border-0 rounded-3xl bg-white shadow-xl"
-          onClick={() => handleMainOption("conveyance")}
-        >
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-green-100 rounded-2xl flex items-center justify-center">
-                  <Car className="h-6 w-6 text-green-600" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-900">Conveyance</h3>
-                  <p className="text-gray-500 text-sm">Track travel expenses</p>
-                </div>
-              </div>
-              <div className="text-green-600">→</div>
-            </div>
-          </CardContent>
-        </Card>
+
+<Card 
+  className="hover:shadow-lg transition-all cursor-pointer border-0 rounded-3xl bg-white shadow-xl"
+  onClick={() => handleMainOption("leads")}
+>
+  <CardContent className="p-6">
+    <div className="flex items-center justify-between">
+      <div className="flex items-center gap-4">
+        <div className="w-12 h-12 bg-yellow-100 rounded-2xl flex items-center justify-center">
+          <User className="h-6 w-6 text-yellow-600" />
+        </div>
+        <div>
+          <h3 className="text-lg font-semibold text-gray-900">My Leads</h3>
+          <p className="text-gray-500 text-sm">Manage potential customers</p>
+        </div>
+      </div>
+      <div className="text-yellow-600">→</div>
+    </div>
+  </CardContent>
+</Card>
+
+
+
 
         <Card 
           className="hover:shadow-lg transition-all cursor-pointer border-0 rounded-3xl bg-white shadow-xl"
@@ -213,6 +219,28 @@ const Index = () => {
             </div>
           </CardContent>
         </Card>
+
+
+        <Card 
+          className="hover:shadow-lg transition-all cursor-pointer border-0 rounded-3xl bg-white shadow-xl"
+          onClick={() => handleMainOption("conveyance")}
+        >
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-green-100 rounded-2xl flex items-center justify-center">
+                  <Car className="h-6 w-6 text-green-600" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900">Conveyance</h3>
+                  <p className="text-gray-500 text-sm">Track travel expenses</p>
+                </div>
+              </div>
+              <div className="text-green-600">→</div>
+            </div>
+          </CardContent>
+        </Card>
+
       </div>
 
       <BottomNavigation />
