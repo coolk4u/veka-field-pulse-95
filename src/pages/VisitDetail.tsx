@@ -1,5 +1,5 @@
 import { useLocation, useParams, useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -35,6 +35,7 @@ const VisitDetail = () => {
   const [isCheckedIn, setIsCheckedIn] = useState(false);
   const [visitReason, setVisitReason] = useState("");
   const [notes, setNotes] = useState("");
+  const [accessToken, setAccessToken] = useState<string | null>(null);
   const [products, setProducts] = useState([
     { name: "Premium uPVC Door", quantity: 0 },
     { name: "Composite Door", quantity: 0 },
@@ -55,6 +56,37 @@ const VisitDetail = () => {
     location: visit?.Location__c || "N/A"
   };
 
+  // Fetch Salesforce access token automatically
+  const getAccessToken = async () => {
+    const salesforceUrl = 'https://gtmdataai-dev-ed.develop.my.salesforce.com/services/oauth2/token';
+    const clientId = '3MVG9OGq41FnYVsFObrvP_I4DU.xo6cQ3wP75Sf7rxOPMtz0Ofj5RIDyM83GlmVkGFbs_0aLp3hlj51c8GQsq';
+    const clientSecret = 'A9699851D548F0C076BB6EB07C35FEE1822752CF5B2CC7F0C002DC4ED9466492';
+
+    const params = new URLSearchParams();
+    params.append("grant_type", "client_credentials");
+    params.append("client_id", clientId);
+    params.append("client_secret", clientSecret);
+
+    try {
+      const response = await axios.post(salesforceUrl, params, {
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      });
+      setAccessToken(response.data.access_token);
+      console.log("✅ Access token retrieved");
+    } catch (err) {
+      console.error("❌ Failed to fetch access token", err);
+      toast({
+        title: "Access Token Error",
+        description: "Failed to retrieve Salesforce access token.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  useEffect(() => {
+    getAccessToken();
+  }, []);
+
   const handleCheckIn = () => {
     setIsCheckedIn(true);
     toast({
@@ -73,48 +105,57 @@ const VisitDetail = () => {
     );
   };
 
-const handleCompleteVisit = async () => {
-  if (!visitReason) {
-    toast({
-      title: "Visit Reason Required",
-      description: "Please select a visit reason before completing the visit.",
-      variant: "destructive"
-    });
-    return;
-  }
+  const handleCompleteVisit = async () => {
+    if (!visitReason) {
+      toast({
+        title: "Visit Reason Required",
+        description: "Please select a visit reason before completing the visit.",
+        variant: "destructive"
+      });
+      return;
+    }
 
-  try {
-    await axios.post(
-      "https://gtmdataai-dev-ed.develop.my.salesforce.com/services/apexrest/updateVisitNotes",
-      {
-        visitId: visitData.id,
-        visitReason: visitReason,
-        visitNotes: notes
-      },
-      {
-        headers: {
-          Authorization: `Bearer 00DHn000001PlBH!ARcAQF6zyYIOXjpFkROtk9kBM0v4Ma6uAx3TjMY1NP.nadc6rZ2VZPHllm..9JpW0Hi5A139L7iY4AjCW3riEr7t59AUDpE6`,
-          'Content-Type': 'application/json'
+    if (!accessToken) {
+      toast({
+        title: "Access Token Missing",
+        description: "Authorization failed. Please try again later.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    try {
+      await axios.post(
+        "https://gtmdataai-dev-ed.develop.my.salesforce.com/services/apexrest/updateVisitNotes",
+        {
+          type: "visit",
+          visitId: visitData.id,
+          visitReason: visitReason,
+          visitNotes: notes
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            'Content-Type': 'application/json'
+          }
         }
-      }
-    );
+      );
 
-    toast({
-      title: "Visit Completed",
-      description: "Visit has been successfully completed and logged.",
-    });
+      toast({
+        title: "Visit Completed",
+        description: "Visit has been successfully completed and logged.",
+      });
 
-    setTimeout(() => navigate("/"), 2000);
-  } catch (error) {
-    toast({
-      title: "Error updating visit",
-      description: "Something went wrong while updating the visit data.",
-      variant: "destructive"
-    });
-    console.error("Update visit error:", error);
-  }
-};
-
+      setTimeout(() => navigate("/"), 2000);
+    } catch (error) {
+      toast({
+        title: "Error updating visit",
+        description: "Something went wrong while updating the visit data.",
+        variant: "destructive"
+      });
+      console.error("Update visit error:", error);
+    }
+  };
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-600 to-blue-800 pb-20">
       {/* Header */}
