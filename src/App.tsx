@@ -10,6 +10,8 @@ import VisitDetail from "./pages/VisitDetail";
 import AttendanceDetail from "./pages/AttendanceDetail";
 import ConveyanceDetail from "./pages/ConveyanceDetail";
 import NotFound from "./pages/NotFound";
+import Leads from "./pages/Leads";
+import LeadDetail from "./pages/LeadDetail";
 
 const queryClient = new QueryClient();
 
@@ -21,6 +23,8 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
+          <Route path="/leads" element={<Leads />} />
+          <Route path="/lead-detail/:id" element={<LeadDetail />} />
           <Route path="/visits" element={<Visits />} />
           <Route path="/visit/:id" element={<VisitDetail />} />
           <Route path="/attendance" element={<AttendanceDetail />} />
