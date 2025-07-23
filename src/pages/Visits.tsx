@@ -57,7 +57,7 @@ const Visits = () => {
   const fetchVisits = async (token: string) => {
     try {
       const response = await axios.get(
-        "https://gtmdataai-dev-ed.develop.my.salesforce.com/services/data/v62.0/query?q=https://gtmdataai-dev-ed.develop.my.salesforce.com/services/data/v62.0/query?q=SELECT+Id,+Name__c,+Email__c,+Phone__c,+Address__c,+Status__c,+Location__c,+Date__c,+Time__c+FROM+Visit__c+WHERE+Status__c+IN+('Pending','In+Progress')+AND+OwnerId='005Hn00000Hg2ElIAJ'",
+        "https://gtmdataai-dev-ed.develop.my.salesforce.com/services/data/v62.0/query?q=https://gtmdataai-dev-ed.develop.my.salesforce.com/services/data/v62.0/query?q=SELECT+Id,+Name__c,Email__c,Phone__c,Address__c,Status__c,Location__c,Date__c,Time__c+FROM+Visit__c+WHERE+Status__c+IN+('Pending','In+Progress')+AND+OwnerId='005Hn00000Hg2ElIAJ'",
         {
           headers: {
             Authorization: `Bearer ${token}`,
