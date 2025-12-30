@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -8,65 +7,100 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useNavigate } from "react-router-dom";
 
 interface Visit {
-  Id: string;
-  Name__c: string;
-  Email__c: string;
-  Phone__c: string;
-  Address__c: string;
-  Status__c: string;
-  Location__c: string;
-  Date__c: string;
-  Time__c: string;
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  address: string;
+  status: string;
+  location: string;
+  date: string;
+  time: string;
+  customerName: string;
 }
+
+// Dummy data in JSON format
+const dummyVisitsData: Visit[] = [
+  {
+    id: "1",
+    name: "TechCorp Office Visit",
+    email: "john.doe@techcorp.com",
+    phone: "+1 (555) 123-4567",
+    address: "123 Main Street, Suite 500, San Francisco, CA 94105",
+    status: "Pending",
+    location: "TechCorp Headquarters",
+    date: "2024-03-15",
+    time: "10:30 AM",
+    customerName: "John Doe"
+  },
+  {
+    id: "2",
+    name: "Retail Store Assessment",
+    email: "sarah.smith@retailco.com",
+    phone: "+1 (555) 987-6543",
+    address: "456 Oak Avenue, Chicago, IL 60601",
+    status: "Completed",
+    location: "Downtown Retail Store",
+    date: "2024-03-14",
+    time: "2:00 PM",
+    customerName: "Sarah Smith"
+  },
+  {
+    id: "3",
+    name: "Factory Safety Inspection",
+    email: "mike.jones@manufacturing.com",
+    phone: "+1 (555) 456-7890",
+    address: "789 Industrial Way, Detroit, MI 48201",
+    status: "In Progress",
+    location: "Auto Manufacturing Plant",
+    date: "2024-03-16",
+    time: "9:00 AM",
+    customerName: "Mike Jones"
+  },
+  {
+    id: "4",
+    name: "Hospital Equipment Check",
+    email: "dr.lee@medicalcenter.org",
+    phone: "+1 (555) 234-5678",
+    address: "101 Health Blvd, Boston, MA 02115",
+    status: "Pending",
+    location: "General Hospital",
+    date: "2024-03-17",
+    time: "11:00 AM",
+    customerName: "Dr. Jennifer Lee"
+  },
+  {
+    id: "5",
+    name: "School IT Infrastructure",
+    email: "principal.wilson@school.edu",
+    phone: "+1 (555) 876-5432",
+    address: "202 Education Lane, Austin, TX 73301",
+    status: "Completed",
+    location: "Central High School",
+    date: "2024-03-13",
+    time: "1:30 PM",
+    customerName: "Principal Wilson"
+  }
+];
 
 const Visits = () => {
   const navigate = useNavigate();
   const [visits, setVisits] = useState<Visit[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
-  const [accessToken, setAccessToken] = useState<string | null>(null);
 
   const stats = {
     totalVisits: visits.length,
-    completedVisits: visits.filter(v => v.Status__c === "Completed").length,
-    pendingVisits: visits.filter(v => v.Status__c === "Pending").length,
+    completedVisits: visits.filter(v => v.status === "Completed").length,
+    pendingVisits: visits.filter(v => v.status === "Pending").length,
     monthlyTarget: 30
   };
 
-  // Step 1: Get Access Token
-  const getAccessToken = async () => {
-    const tokenUrl = 'https://gtmdataai-dev-ed.develop.my.salesforce.com/services/oauth2/token';
-    const clientId = '3MVG9OGq41FnYVsFObrvP_I4DU.xo6cQ3wP75Sf7rxOPMtz0Ofj5RIDyM83GlmVkGFbs_0aLp3hlj51c8GQsq';
-    const clientSecret = 'A9699851D548F0C076BB6EB07C35FEE1822752CF5B2CC7F0C002DC4ED9466492';
-
-    const params = new URLSearchParams();
-    params.append('grant_type', 'client_credentials');
-    params.append('client_id', clientId);
-    params.append('client_secret', clientSecret);
-
+  // Fetch dummy data
+  const fetchVisits = async () => {
     try {
-      const response = await axios.post(tokenUrl, params, {
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
-      });
-      setAccessToken(response.data.access_token);
-    } catch (err) {
-      console.error("❌ Failed to fetch access token", err);
-    }
-  };
-
-  // Step 2: Fetch Visits using the token
-  const fetchVisits = async (token: string) => {
-    try {
-      const response = await axios.get(
-"https://gtmdataai-dev-ed.develop.my.salesforce.com/services/data/v62.0/query?q=SELECT+Id,+Name__c,+Email__c,+Phone__c,+Address__c,+Status__c,+Location__c,+Date__c,+Time__c+FROM+Visit__c+WHERE+Status__c+IN+('Pending','In Progress')+AND+OwnerId='005Hn00000Hg2ElIAJ'",
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            Accept: '*/*',
-            'Content-Type': 'application/json',
-          },
-        }
-      );
-      setVisits(response.data.records);
+      // Simulate API delay
+      await new Promise(resolve => setTimeout(resolve, 500));
+      setVisits(dummyVisitsData);
     } catch (error) {
       console.error("❌ Error fetching visits:", error);
     } finally {
@@ -75,17 +109,11 @@ const Visits = () => {
   };
 
   useEffect(() => {
-    getAccessToken();
+    fetchVisits();
   }, []);
 
-  useEffect(() => {
-    if (accessToken) {
-      fetchVisits(accessToken);
-    }
-  }, [accessToken]);
-
   const handleVisitDetail = (visit: Visit) => {
-    navigate(`/visit/${visit.Id}`, { state: { visit } });
+    navigate(`/visit/${visit.id}`, { state: { visit } });
   };
 
   return (
@@ -169,7 +197,7 @@ const Visits = () => {
             ) : (
               visits.map((visit) => (
                 <Card
-                  key={visit.Id}
+                  key={visit.id}
                   className="hover:shadow-md transition-all cursor-pointer border border-gray-100 rounded-2xl overflow-hidden"
                   onClick={() => handleVisitDetail(visit)}
                 >
@@ -177,31 +205,33 @@ const Visits = () => {
                     <div className="flex items-center justify-between">
                       <div className="flex-1">
                         <div className="flex items-center gap-3 mb-2">
-                          <h3 className="font-semibold text-lg text-gray-900">{visit.Location__c}</h3>
+                          <h3 className="font-semibold text-lg text-gray-900">{visit.location}</h3>
                           <Badge
-                            variant={visit.Status__c === "Completed" ? "default" : "secondary"}
-                            className={visit.Status__c === "Completed" ? "bg-green-100 text-green-800" : "bg-orange-100 text-orange-800"}
+                            variant={visit.status === "Completed" ? "default" : "secondary"}
+                            className={visit.status === "Completed" ? "bg-green-100 text-green-800" : 
+                                     visit.status === "In Progress" ? "bg-blue-100 text-blue-800" : 
+                                     "bg-orange-100 text-orange-800"}
                           >
-                            {visit.Status__c}
+                            {visit.status}
                           </Badge>
                         </div>
                         <div className="space-y-1 text-gray-600">
                           <div className="flex items-center gap-2">
                             <MapPin className="h-4 w-4 text-blue-600" />
-                            <span className="text-sm">{visit.Address__c}</span>
+                            <span className="text-sm">{visit.address}</span>
                           </div>
                           <div className="flex items-center gap-4">
                             <div className="flex items-center gap-1">
                               <Calendar className="h-4 w-4 text-blue-600" />
-                              <span className="text-sm">{visit.Date__c}</span> {/* Replace with actual date if available */}
+                              <span className="text-sm">{visit.date}</span>
                             </div>
                             <div className="flex items-center gap-1">
                               <Clock className="h-4 w-4 text-blue-600" />
-                              <span className="text-sm">{visit.Time__c}</span>
+                              <span className="text-sm">{visit.time}</span>
                             </div>
                           </div>
                         </div>
-                        <p className="text-sm text-blue-600 mt-2 font-medium">{visit.Name__c}</p>
+                        <p className="text-sm text-blue-600 mt-2 font-medium">{visit.customerName}</p>
                       </div>
                       <Button variant="ghost" size="sm" className="text-blue-600 hover:bg-blue-50">
                         View →
