@@ -1,5 +1,5 @@
 import { useLocation, useParams, useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -24,68 +24,65 @@ import {
   User
 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
-import axios from "axios";
+
+// Dummy visit data in JSON format
+const DUMMY_VISITS = [
+  {
+    id: "1",
+    clientName: "John Smith Construction",
+    address: "123 Main Street, Anytown, USA",
+    type: "Site Inspection",
+    status: "In Progress",
+    date: "2024-01-15",
+    time: "10:30 AM",
+    contactPerson: "John Smith",
+    phone: "+1 (555) 123-4567",
+    location: "Construction Site - East Wing"
+  },
+  {
+    id: "2",
+    clientName: "Modern Homes Ltd",
+    address: "456 Oak Avenue, Springfield",
+    type: "Quote Discussion",
+    status: "Pending",
+    date: "2024-01-16",
+    time: "2:00 PM",
+    contactPerson: "Sarah Johnson",
+    phone: "+1 (555) 987-6543",
+    location: "Office Building, 3rd Floor"
+  },
+  {
+    id: "3",
+    clientName: "Green Builders Inc",
+    address: "789 Pine Road, Greenville",
+    type: "Product Demo",
+    status: "Completed",
+    date: "2024-01-14",
+    time: "9:00 AM",
+    contactPerson: "Michael Brown",
+    phone: "+1 (555) 456-7890",
+    location: "Showroom Center"
+  }
+];
 
 const VisitDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
-  const visit = location.state?.visit;
+  
+  // Find visit from dummy data or use passed state
+  const visitFromState = location.state?.visit;
+  const visitData = visitFromState || DUMMY_VISITS.find(visit => visit.id === id) || DUMMY_VISITS[0];
 
   const [isCheckedIn, setIsCheckedIn] = useState(false);
   const [visitReason, setVisitReason] = useState("");
   const [notes, setNotes] = useState("");
-  const [accessToken, setAccessToken] = useState<string | null>(null);
   const [products, setProducts] = useState([
     { name: "Premium uPVC Door", quantity: 0 },
     { name: "Composite Door", quantity: 0 },
     { name: "French Door", quantity: 0 },
     { name: "Sliding Door", quantity: 0 }
   ]);
-
-  const visitData = {
-    id: visit?.Id || id,
-    clientName: visit?.Name__c || "Unknown Client",
-    address: visit?.Address__c || "Location not available",
-    type: visit?.Type__c || "N/A",
-    status: visit?.Status__c || "Pending",
-    date: visit?.Date__c || "N/A",
-    time: visit?.Time__c || "N/A",
-    contactPerson: visit?.Contact_Person__c || "N/A",
-    phone: visit?.Phone__c || "N/A",
-    location: visit?.Location__c || "N/A"
-  };
-
-  // Fetch Salesforce access token automatically
-  const getAccessToken = async () => {
-    const salesforceUrl = 'https://gtmdataai-dev-ed.develop.my.salesforce.com/services/oauth2/token';
-    const clientId = '3MVG9OGq41FnYVsFObrvP_I4DU.xo6cQ3wP75Sf7rxOPMtz0Ofj5RIDyM83GlmVkGFbs_0aLp3hlj51c8GQsq';
-    const clientSecret = 'A9699851D548F0C076BB6EB07C35FEE1822752CF5B2CC7F0C002DC4ED9466492';
-
-    const params = new URLSearchParams();
-    params.append("grant_type", "client_credentials");
-    params.append("client_id", clientId);
-    params.append("client_secret", clientSecret);
-
-    try {
-      const response = await axios.post(salesforceUrl, params, {
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      });
-      setAccessToken(response.data.access_token);
-      console.log("✅ Access token retrieved");
-    } catch (err) {
-      console.error("❌ Failed to fetch access token", err);
-      toast({
-        title: "Access Token Error",
-        description: "Failed to retrieve Salesforce access token.",
-        variant: "destructive",
-      });
-    }
-  };
-
-  useEffect(() => {
-    getAccessToken();
-  }, []);
 
   const handleCheckIn = () => {
     setIsCheckedIn(true);
@@ -105,7 +102,7 @@ const VisitDetail = () => {
     );
   };
 
-  const handleCompleteVisit = async () => {
+  const handleCompleteVisit = () => {
     if (!visitReason) {
       toast({
         title: "Visit Reason Required",
@@ -115,47 +112,28 @@ const VisitDetail = () => {
       return;
     }
 
-    if (!accessToken) {
-      toast({
-        title: "Access Token Missing",
-        description: "Authorization failed. Please try again later.",
-        variant: "destructive"
-      });
-      return;
-    }
+    // Simulate API call with dummy data
+    const visitDataToSave = {
+      visitId: visitData.id,
+      clientName: visitData.clientName,
+      visitReason: visitReason,
+      visitNotes: notes,
+      products: products.filter(p => p.quantity > 0),
+      checkInTime: new Date().toISOString(),
+      checkOutTime: new Date().toISOString(),
+      status: "Completed"
+    };
 
-    try {
-      await axios.post(
-        "https://gtmdataai-dev-ed.develop.my.salesforce.com/services/apexrest/updateVisitNotes",
-        {
-          type: "visit",
-          visitId: visitData.id,
-          visitReason: visitReason,
-          visitNotes: notes
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-            'Content-Type': 'application/json'
-          }
-        }
-      );
+    console.log("Visit data saved:", visitDataToSave);
+    
+    toast({
+      title: "Visit Completed",
+      description: "Visit has been successfully completed and logged.",
+    });
 
-      toast({
-        title: "Visit Completed",
-        description: "Visit has been successfully completed and logged.",
-      });
-
-      setTimeout(() => navigate("/"), 2000);
-    } catch (error) {
-      toast({
-        title: "Error updating visit",
-        description: "Something went wrong while updating the visit data.",
-        variant: "destructive"
-      });
-      console.error("Update visit error:", error);
-    }
+    setTimeout(() => navigate("/"), 2000);
   };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-600 to-blue-800 pb-20">
       {/* Header */}
