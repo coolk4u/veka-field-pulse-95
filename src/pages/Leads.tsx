@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -29,58 +28,133 @@ interface Lead {
   };
 }
 
+// Dummy data
+const dummyLeads: Lead[] = [
+  {
+    Id: "1",
+    Name: "John Smith",
+    StageName: "Qualified",
+    LeadSource: "Website",
+    Type: "New Customer",
+    Account: {
+      BillingStreet: "123 Main St",
+      BillingCity: "New York",
+      BillingState: "NY",
+      BillingPostalCode: "10001",
+      BillingCountry: "USA"
+    },
+    OpportunityContactRoles: {
+      records: [{
+        Contact: {
+          Phone: "+1 (555) 123-4567",
+          Email: "john.smith@example.com"
+        }
+      }]
+    }
+  },
+  {
+    Id: "2",
+    Name: "Sarah Johnson",
+    StageName: "Proposal",
+    LeadSource: "Referral",
+    Type: "Existing Customer",
+    Account: {
+      BillingStreet: "456 Oak Ave",
+      BillingCity: "Chicago",
+      BillingState: "IL",
+      BillingPostalCode: "60601",
+      BillingCountry: "USA"
+    },
+    OpportunityContactRoles: {
+      records: [{
+        Contact: {
+          Phone: "+1 (555) 987-6543",
+          Email: "sarah.j@example.com"
+        }
+      }]
+    }
+  },
+  {
+    Id: "3",
+    Name: "Robert Chen",
+    StageName: "Negotiation",
+    LeadSource: "Trade Show",
+    Type: "Partner",
+    Account: {
+      BillingStreet: "789 Tech Blvd",
+      BillingCity: "San Francisco",
+      BillingState: "CA",
+      BillingPostalCode: "94107",
+      BillingCountry: "USA"
+    },
+    OpportunityContactRoles: {
+      records: [{
+        Contact: {
+          Phone: "+1 (555) 456-7890",
+          Email: "robert.chen@example.com"
+        }
+      }]
+    }
+  },
+  {
+    Id: "4",
+    Name: "Maria Garcia",
+    StageName: "Closed Won",
+    LeadSource: "Social Media",
+    Type: "New Customer",
+    Account: {
+      BillingStreet: "321 Market St",
+      BillingCity: "Miami",
+      BillingState: "FL",
+      BillingPostalCode: "33101",
+      BillingCountry: "USA"
+    },
+    OpportunityContactRoles: {
+      records: [{
+        Contact: {
+          Phone: "+1 (555) 789-0123",
+          Email: "maria.g@example.com"
+        }
+      }]
+    }
+  },
+  {
+    Id: "5",
+    Name: "David Wilson",
+    StageName: "Discovery",
+    LeadSource: "Cold Call",
+    Type: "Prospect",
+    Account: {
+      BillingStreet: "654 Pine Rd",
+      BillingCity: "Seattle",
+      BillingState: "WA",
+      BillingPostalCode: "98101",
+      BillingCountry: "USA"
+    },
+    OpportunityContactRoles: {
+      records: [{
+        Contact: {
+          Phone: "+1 (555) 234-5678",
+          Email: "david.w@example.com"
+        }
+      }]
+    }
+  }
+];
+
 const Leads = () => {
   const [leads, setLeads] = useState<Lead[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [accessToken, setAccessToken] = useState<string | null>(null);
   const navigate = useNavigate();
 
-  const fetchAccessToken = async () => {
-    const salesforceUrl = "https://gtmdataai-dev-ed.develop.my.salesforce.com/services/oauth2/token";
-    const clientId = "3MVG9OGq41FnYVsFObrvP_I4DU.xo6cQ3wP75Sf7rxOPMtz0Ofj5RIDyM83GlmVkGFbs_0aLp3hlj51c8GQsq";
-    const clientSecret = "A9699851D548F0C076BB6EB07C35FEE1822752CF5B2CC7F0C002DC4ED9466492";
-
-    const params = new URLSearchParams();
-    params.append("grant_type", "client_credentials");
-    params.append("client_id", clientId);
-    params.append("client_secret", clientSecret);
-
-    try {
-      const response = await axios.post(salesforceUrl, params, {
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      });
-      setAccessToken(response.data.access_token);
-    } catch (error) {
-      console.error("Failed to fetch access token:", error);
-    }
-  };
-
-  const fetchLeads = async (token: string) => {
-    try {
-      const response = await axios.get(
-        "https://gtmdataai-dev-ed.develop.my.salesforce.com/services/data/v62.0/query?q=SELECT+Id,Name,StageName,LeadSource,Type,Fabricator_Name__c,Quantity__c,Length__c,Breadth__c,Depth__c,Owner.Name,Account.Name,Account.BillingStreet,Account.BillingCity,Account.BillingState,Account.BillingPostalCode,Account.BillingCountry,(SELECT+Contact.Name,Contact.Phone,Contact.Email+FROM+OpportunityContactRoles)+FROM+Opportunity+WHERE+Owner.Name='Sai Kiran'",
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            Accept: "application/json",
-          },
-        }
-      );
-      setLeads(response.data.records);
-    } catch (error) {
-      console.error("Error fetching leads:", error);
-    }
-  };
-
   useEffect(() => {
-    fetchAccessToken();
+    // Simulate API call delay
+    const timer = setTimeout(() => {
+      setLeads(dummyLeads);
+    }, 500);
+
+    return () => clearTimeout(timer);
   }, []);
-
-  useEffect(() => {
-    if (accessToken) {
-      fetchLeads(accessToken);
-    }
-  }, [accessToken]);
 
   const filteredLeads = leads.filter((lead) =>
     lead.Name?.toLowerCase().includes(searchTerm.toLowerCase())
